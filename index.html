@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Học Tập Tương Tác: Khí Hiếm & Tốc Độ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #1f2937;
+            font-size: 1.25rem; /* Base font size large */
+            line-height: 1.75;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container-fluid {
+            width: 100%;
+            max-width: 100vw;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        /* Tựa bài lớn, màu cam gạch, in đậm, không 3D */
+        .main-title { 
+            font-size: 4.5rem; 
+            color: #C14A09; 
+            font-weight: 800;
+            line-height: 1.2;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+        
+        .section-title { font-size: 2.5rem; color: #1d4ed8; font-weight: 700; margin-top: 3rem; margin-bottom: 1.5rem; border-bottom: 3px solid #bfdbfe; padding-bottom: 0.5rem;}
+        .task-title { font-size: 1.75rem; color: #b91c1c; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; }
+        .sub-heading { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            border: 2px solid #9ca3af;
+        }
+        
+        th, td {
+            border: 1px solid #9ca3af;
+            padding: 1.25rem;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 1.25rem;
+        }
+        
+        th {
+            background-color: #dbeafe;
+            font-weight: 700;
+            font-size: 1.35rem;
+            color: #1e3a8a;
+            text-align: center;
+        }
+
+        /* Style for dropdowns */
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #6b7280;
+            border-radius: 0.5rem;
+            background-color: #f9fafb;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: #1f2937;
+            font-weight: 600;
+            appearance: none; /* Remove default arrow to style empty state better */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            min-height: 3.5rem; /* Ensure they have height even when empty */
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Inline blanks */
+        .inline-blank {
+            display: inline-block;
+            min-width: 250px;
+            margin: 0 0.5rem;
+        }
+
+        /* Drag and Drop Styles */
+        .drag-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .drag-source-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1.5rem;
+            background-color: #f3f4f6;
+            border: 3px dashed #6b7280;
+            border-radius: 0.5rem;
+            min-height: 120px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .draggable-element {
+            background-color: #3b82f6;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            font-size: 1.75rem;
+            cursor: grab;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            user-select: none;
+        }
+
+        .draggable-element:active {
+            cursor: grabbing;
+        }
+
+        .drop-targets-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .drop-target-column {
+            border: 2px solid #9ca3af;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drop-target-header {
+            background-color: #dbeafe;
+            padding: 1rem;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #9ca3af;
+        }
+
+        .drop-zone {
+            flex-grow: 1;
+            min-height: 200px;
+            padding: 1rem;
+            background-color: #f8fafc;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-content: flex-start;
+            transition: background-color 0.2s;
+        }
+
+        .drop-zone.drag-over {
+            background-color: #dcfce7;
+        }
+
+        .list-item { margin-bottom: 1.5rem; }
+        
+        @media (max-width: 1024px) {
+            .main-title { font-size: 3.5rem; }
+            .drop-targets-container { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .main-title { font-size: 2.5rem; }
+            .section-title { font-size: 2rem; }
+            body { font-size: 1.1rem; }
+            th, td, select { font-size: 1.1rem; padding: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        
+        <!-- ================= BÀI KHÍ HIẾM ================= -->
+        <h1 class="main-title">CHUẨN BỊ BÀI: CÁC NGUYÊN TỐ KHÍ HIẾM</h1>
+        <h2 class="section-title">III. VỊ TRÍ CỦA CÁC NHÓM NGUYÊN TỐ KIM LOẠI, PHI KIM, KHÍ HIẾM TRONG BTH</h2>
+        <h3 class="text-3xl font-bold mb-4">3. Khí hiếm</h3>
+
+        <!-- Nhiệm vụ 1 -->
+        <div class="task-title">Nhiệm vụ 1. Tìm hiểu đặc điểm của các nguyên tố khí hiếm</div>
+        <p class="mb-4 italic text-gray-600">(Em hãy đọc mục "Các nguyên tố khí hiếm" trong SGK và hoàn thành bảng sau.)</p>
+        <div class="overflow-x-auto">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Nội dung tìm hiểu</th>
+                        <th style="width: 50%;">Câu trả lời của em</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="font-semibold">1. Trong 118 nguyên tố hóa học đã biết, có bao nhiêu nguyên tố khí hiếm?</td>
+                        <td>
+                            <select data-correct="7">
+                                <option value="" selected disabled hidden></option>
+                                <option value="7">Có 7 nguyên tố khí hiếm</option>
+                                <option value="6">Có 6 nguyên tố khí hiếm</option>
+                                <option value="8">Có 8 nguyên tố khí hiếm</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="font-semibold">2. Các nguyên tử khí hiếm có lớp electron ngoài cùng như thế nào?</td>
+                        <td>
+                            <select data-correct="8e">
+                                <option value="" selected disabled hidden></option>
+                                <option value="8e">Đều có 8 electron (trừ Helium có 2 electron)</option>
+                                <option value="7e">Đều có 7 electron</option>
+                                <option value="1e">Đều có 1 electron</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="font-semibold">3. Kể tên hai ứng dụng của khí hiếm trong đời sống.</td>
+                        <td>
+                            <select data-correct="den_khicau">
+                                <option value="" selected disabled hidden></option>
+                                <option value="den_khicau">Làm đèn quảng cáo, bơm vào khí cầu</option>
+                                <option value="nhiet_ke">Làm nhiệt kế, đo huyết áp</option>
+                                <option value="phan_bon">Làm phân bón, thuốc nổ</option>
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Nhiệm vụ 2 -->
+        <div class="task-title">Nhiệm vụ 2. Khám phá vị trí của khí hiếm trong bảng tuần hoàn</div>
+        <p class="mb-4 italic text-gray-600">(Em hãy sử dụng bảng tuần hoàn các nguyên tố hóa học trong SGK để trả lời các câu hỏi sau.)</p>
+        
+        <div class="mb-8 space-y-6 bg-blue-50 p-6 rounded-xl border border-blue-200">
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+                <div class="font-semibold md:w-1/2">1. Nguyên tố neon có kí hiệu hóa học là gì?</div>
+                <div class="md:w-1/2">
+                    <select data-correct="Ne">
+                        <option value="" selected disabled hidden></option>
+                        <option value="Ne">Ne</option>
+                        <option value="N">N</option>
+                        <option value="Na">Na</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+                <div class="font-semibold md:w-1/2">2. Neon nằm ở ô số bao nhiêu, chu kì mấy, nhóm nào trong bảng tuần hoàn?</div>
+                <div class="md:w-1/2">
+                    <select data-correct="o10_ck2_nhom8a">
+                        <option value="" selected disabled hidden></option>
+                        <option value="o10_ck2_nhom8a">Ô số 10, chu kì 2, nhóm VIIIA</option>
+                        <option value="o10_ck3_nhom7a">Ô số 10, chu kì 3, nhóm VIIA</option>
+                        <option value="o8_ck2_nhom6a">Ô số 8, chu kì 2, nhóm VIA</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+                <div class="font-semibold md:w-1/2">3. Các nguyên tố khí hiếm nằm ở vị trí nào trong bảng tuần hoàn?</div>
+                <div class="md:w-1/2">
+                    <select data-correct="nhom_8a">
+                        <option value="" selected disabled hidden></option>
+                        <option value="nhom_8a">Nằm ở cột cuối cùng (nhóm VIIIA)</option>
+                        <option value="nhom_1a">Nằm ở cột đầu tiên (nhóm IA)</option>
+                        <option value="giua_bang">Nằm ở giữa bảng tuần hoàn</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nhiệm vụ 3: Kéo thả -->
+        <div class="task-title">Nhiệm vụ 3. Phân loại các nguyên tố hóa học (Kéo - Thả)</div>
+        <p class="mb-4 italic font-bold text-red-600">(Cho các nguyên tố có kí hiệu hóa học sau: P, Ba, Rb, Cu, Fe, Ne, Si. Em hãy kéo và thả kí hiệu các nguyên tố vào đúng cột tương ứng dưới đây.)</p>
+        
+        <div class="drag-container">
+            <!-- Nơi chứa các nguyên tố để kéo -->
+            <div class="drag-source-area" id="source-area" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="draggable-element" draggable="true" ondragstart="drag(event)" id="elem-P" data-correct-zone="zone-nonmetal">P</div>
+                <div class="draggable-element" draggable="true" ondragstart="drag(event)" id="elem-Ba" data-correct-zone="zone-metal">Ba</div>
+                <div class="draggable-element" draggable="true" ondragstart="drag(event)" id="elem-Rb" data-correct-zone="zone-metal">Rb</div>
+                <div class="draggable-element" draggable="true" ondragstart="drag(event)" id="elem-Cu" data-correct-zone="zone-metal">Cu</div>
+                <div class="draggable-element" draggable="true" ondragstart="drag(event)" id="elem-Fe" data-correct-zone="zone-metal">Fe</div>
+                <div class="draggable-element" draggable="true" ondragstart="drag(event)" id="elem-Ne" data-correct-zone="zone-noblegas">Ne</div>
+                <div class="draggable-element" draggable="true" ondragstart="drag(event)" id="elem-Si" data-correct-zone="zone-nonmetal">Si</div>
+            </div>
+
+            <!-- Các cột đích để thả -->
+            <div class="drop-targets-container">
+                <div class="drop-target-column bg-orange-50">
+                    <div class="drop-target-header text-orange-800 bg-orange-200">Kim loại</div>
+                    <div class="drop-zone" id="zone-metal" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"></div>
+                </div>
+                <div class="drop-target-column bg-green-50">
+                    <div class="drop-target-header text-green-800 bg-green-200">Phi kim</div>
+                    <div class="drop-zone" id="zone-nonmetal" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"></div>
+                </div>
+                <div class="drop-target-column bg-purple-50">
+                    <div class="drop-target-header text-purple-800 bg-purple-200">Khí hiếm</div>
+                    <div class="drop-zone" id="zone-noblegas" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nhiệm vụ 4 -->
+        <div class="task-title">Nhiệm vụ 4. Vận dụng kiến thức vào thực tiễn</div>
+        <div class="mb-12 space-y-6">
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-300">
+                <div class="font-semibold mb-3">1. Em hãy nêu một ứng dụng của khí neon hoặc một nguyên tố khí hiếm khác trong đời sống.</div>
+                <select data-correct="neon_sign">
+                    <option value="" selected disabled hidden></option>
+                    <option value="neon_sign">Khí neon dùng làm đèn quảng cáo (đèn neon) phát ra ánh sáng đỏ hoặc cam.</option>
+                    <option value="argon_bulb">Khí argon bơm vào bóng đèn sợi đốt để bảo vệ dây tóc.</option>
+                    <option value="helium_balloon">Khí helium dùng bơm khinh khí cầu vì nhẹ và không cháy.</option>
+                </select>
+            </div>
+            
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-300">
+                <div class="font-semibold mb-3">2. Theo em, vì sao khí hiếm có thể được sử dụng trong một số loại đèn chiếu sáng?</div>
+                <select data-correct="ly_do_1">
+                    <option value="" selected disabled hidden></option>
+                    <option value="ly_do_1">Vì chúng trơ về mặt hóa học, không phản ứng với các vật liệu trong đèn ở nhiệt độ cao và phát sáng khi có dòng điện chạy qua.</option>
+                    <option value="ly_do_2">Vì chúng rất dễ cháy tạo ra ánh sáng mạnh.</option>
+                    <option value="ly_do_3">Vì chúng có màu sắc tự nhiên rực rỡ ngay cả khi không có điện.</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Đường phân cách -->
+        <div class="my-16 border-t-8 border-dashed border-gray-300"></div>
+
+        <!-- ================= BÀI TỐC ĐỘ ================= -->
+        <h1 class="main-title">BÀI 8. TỐC ĐỘ CHUYỂN ĐỘNG</h1>
+        
+        <div class="mb-8 flex items-center bg-yellow-50 p-4 rounded-lg border-2 border-yellow-200">
+            <span class="font-bold text-xl mr-4 whitespace-nowrap">Họ và tên học sinh:</span>
+            <div class="flex-grow">
+                 <select>
+                    <option value="" selected disabled hidden></option>
+                    <option value="hs1">Học sinh A</option>
+                    <option value="hs2">Học sinh B</option>
+                    <option value="hs3">Học sinh C</option>
+                    <option value="hs4">Học sinh Khác...</option>
+                </select>
+            </div>
+        </div>
+
+        <h2 class="section-title">I. KHÁI NIỆM VỀ TỐC ĐỘ</h2>
+        <p class="mb-6 italic text-gray-600">(Đọc nội dung Bài 8 trong sách giáo khoa và hoàn thành các câu sau:)</p>
+
+        <div class="space-y-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            
+            <div class="list-item">
+                <div class="font-semibold mb-4">1. Để xác định sự nhanh, chậm của chuyển động, ta có thể so sánh:</div>
+                <div class="pl-6 space-y-4">
+                    <div class="flex items-center flex-wrap gap-2">
+                        <span>- Cách 1: So sánh quãng đường đi được trong cùng một khoảng</span>
+                        <div class="inline-blank"><select data-correct="thoi_gian"><option value="" selected disabled hidden></option><option value="thoi_gian">thời gian.</option><option value="toc_do">tốc độ.</option></select></div>
+                    </div>
+                    <div class="flex items-center flex-wrap gap-2">
+                        <span>- Cách 2: So sánh thời gian để đi cùng một</span>
+                        <div class="inline-blank"><select data-correct="quang_duong"><option value="" selected disabled hidden></option><option value="quang_duong">quãng đường.</option><option value="van_toc">vận tốc.</option></select></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-item flex flex-wrap items-center gap-2">
+                <div class="font-semibold">2. Tốc độ cho biết</div>
+                <div class="inline-blank flex-grow max-w-2xl">
+                    <select data-correct="d">
+                        <option value="" selected disabled hidden></option>
+                        <option value="d">mức độ nhanh hay chậm của chuyển động.</option>
+                        <option value="s">quãng đường đi được dài hay ngắn.</option>
+                        <option value="t">thời gian đi lâu hay mau.</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="list-item">
+                <div class="font-semibold mb-4">3. Viết công thức tính tốc độ:</div>
+                <div class="pl-6 mb-4 font-bold text-2xl flex items-center gap-4">
+                    v = 
+                    <div class="inline-blank w-48">
+                        <select data-correct="s_chia_t">
+                            <option value="" selected disabled hidden></option>
+                            <option value="s_chia_t">s / t</option>
+                            <option value="s_nhan_t">s * t</option>
+                            <option value="t_chia_s">t / s</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="pl-6 space-y-3">
+                    <div class="font-semibold">Trong đó:</div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-16 font-bold">- v là:</span>
+                        <div class="inline-blank w-64"><select data-correct="toc_do"><option value="" selected disabled hidden></option><option value="toc_do">tốc độ</option><option value="van_toc">vận tốc</option></select></div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-16 font-bold">- s là:</span>
+                        <div class="inline-blank w-64"><select data-correct="quang_duong"><option value="" selected disabled hidden></option><option value="quang_duong">quãng đường đi được</option><option value="gia_toc">gia tốc</option></select></div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="w-16 font-bold">- t là:</span>
+                        <div class="inline-blank w-64"><select data-correct="thoi_gian"><option value="" selected disabled hidden></option><option value="thoi_gian">thời gian đi</option><option value="nhiet_do">nhiệt độ</option></select></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-item">
+                <div class="font-semibold mb-4">4. Từ công thức tính tốc độ, hãy viết công thức tính quãng đường và thời gian:</div>
+                <div class="pl-6 space-y-4 font-bold text-xl">
+                    <div class="flex items-center gap-4">
+                        <span>- Quãng đường: s =</span>
+                        <div class="inline-blank w-48">
+                            <select data-correct="v_nhan_t">
+                                <option value="" selected disabled hidden></option>
+                                <option value="v_nhan_t">v * t</option>
+                                <option value="v_chia_t">v / t</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span>- Thời gian: t =</span>
+                        <div class="inline-blank w-48">
+                            <select data-correct="s_chia_v">
+                                <option value="" selected disabled hidden></option>
+                                <option value="s_chia_v">s / v</option>
+                                <option value="v_chia_s">v / s</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <h2 class="section-title">Nhiệm vụ 2. Tìm hiểu đơn vị đo tốc độ</h2>
+        <p class="mb-4 italic text-gray-600">(Điền thông tin còn thiếu vào bảng sau:)</p>
+
+        <div class="overflow-x-auto mb-8">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Đơn vị đo độ dài</th>
+                        <th>Đơn vị đo thời gian</th>
+                        <th>Đơn vị đo tốc độ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center font-semibold">Mét (m)</td>
+                        <td class="text-center font-semibold">Giây (s)</td>
+                        <td class="p-2">
+                            <select data-correct="m_s">
+                                <option value="" selected disabled hidden></option>
+                                <option value="m_s">Mét trên giây (m/s)</option>
+                                <option value="km_h">Kilômét trên giờ (km/h)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center font-semibold">Kilômét (km)</td>
+                        <td class="text-center font-semibold">Giờ (h)</td>
+                        <td class="p-2">
+                            <select data-correct="km_h">
+                                <option value="" selected disabled hidden></option>
+                                <option value="km_h">Kilômét trên giờ (km/h)</option>
+                                <option value="m_s">Mét trên giây (m/s)</option>
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-12">
+            <div class="flex flex-wrap gap-2 items-center">
+                <span class="font-semibold">1. Hai đơn vị đo tốc độ thường dùng ở Việt Nam là:</span>
+                <div class="inline-blank flex-grow">
+                    <select data-correct="m_s_va_km_h">
+                        <option value="" selected disabled hidden></option>
+                        <option value="m_s_va_km_h">m/s và km/h</option>
+                        <option value="m_p_va_km_s">m/phút và km/s</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="font-semibold mb-2">2. Hoàn thành các phép đổi đơn vị:</div>
+            <div class="pl-6 space-y-4 text-xl">
+                <div class="flex items-center gap-4 flex-wrap">
+                    <span class="font-bold">- 1 km/h =</span>
+                    <div class="inline-blank w-48">
+                        <select data-correct="1_3.6">
+                            <option value="" selected disabled hidden></option>
+                            <option value="1_3.6">1 / 3.6</option>
+                            <option value="3.6">3.6</option>
+                            <option value="0.28">~ 0.28</option>
+                        </select>
+                    </div>
+                    <span class="font-bold">m/s</span>
+                </div>
+                <div class="flex items-center gap-4 flex-wrap">
+                    <span class="font-bold">- 1 m/s =</span>
+                    <div class="inline-blank w-48">
+                        <select data-correct="3.6">
+                            <option value="" selected disabled hidden></option>
+                            <option value="3.6">3.6</option>
+                            <option value="1_3.6">1 / 3.6</option>
+                            <option value="10">10</option>
+                        </select>
+                    </div>
+                    <span class="font-bold">km/h</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center pb-12">
+            <button class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-5 px-12 text-3xl rounded-full shadow-xl transition transform hover:scale-105" onclick="evaluateAnswers()">Nộp Bài Đánh Giá</button>
+        </div>
+
+    </div>
+
+    <script>
+        function evaluateAnswers() {
+            // Xóa các biểu tượng cũ
+            document.querySelectorAll('.feedback-icon').forEach(el => el.remove());
+            
+            // Xóa màu cảnh báo cũ
+            document.querySelectorAll('select').forEach(el => {
+                el.style.backgroundColor = '';
+                el.style.borderColor = '';
+            });
+            document.querySelectorAll('.draggable-element').forEach(el => {
+                el.style.backgroundColor = '#3b82f6'; // Reset lại màu xanh mặc định
+            });
+
+            let total = 0;
+            let correct = 0;
+
+            // Kiểm tra các ô chọn
+            document.querySelectorAll('select[data-correct]').forEach(select => {
+                total++;
+                const correctVal = select.getAttribute('data-correct');
+                
+                // Bao bọc select để chèn icon mà không làm vỡ layout
+                if (!select.parentElement.classList.contains('eval-wrapper')) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'eval-wrapper';
+                    wrapper.style.display = 'flex';
+                    wrapper.style.alignItems = 'center';
+                    wrapper.style.width = '100%';
+                    wrapper.style.gap = '8px';
+                    select.parentNode.insertBefore(wrapper, select);
+                    wrapper.appendChild(select);
+                }
+
+                const icon = document.createElement('span');
+                icon.className = 'feedback-icon text-3xl flex-shrink-0';
+
+                if (select.value === correctVal) {
+                    correct++;
+                    icon.innerHTML = '✅';
+                    select.style.backgroundColor = '#dcfce7'; // Nền xanh nhạt
+                    select.style.borderColor = '#22c55e'; // Viền xanh
+                } else {
+                    icon.innerHTML = '❌';
+                    select.style.backgroundColor = '#fee2e2'; // Nền đỏ nhạt
+                    select.style.borderColor = '#ef4444'; // Viền đỏ
+                }
+                
+                select.parentElement.appendChild(icon);
+            });
+
+            // Kiểm tra kéo thả
+            document.querySelectorAll('.draggable-element').forEach(item => {
+                const correctZone = item.getAttribute('data-correct-zone');
+                if(!correctZone) return;
+                
+                total++;
+                const currentZone = item.parentElement.id;
+                
+                const icon = document.createElement('span');
+                icon.className = 'feedback-icon ml-2';
+
+                if (currentZone === correctZone) {
+                    correct++;
+                    icon.innerHTML = '✅';
+                    item.style.backgroundColor = '#16a34a'; // Xanh lá
+                } else {
+                    icon.innerHTML = '❌';
+                    item.style.backgroundColor = '#dc2626'; // Đỏ
+                }
+                item.appendChild(icon);
+            });
+
+            // Hiện bảng thông báo điểm
+            const modal = document.createElement('div');
+            modal.className = 'feedback-icon'; 
+            modal.innerHTML = `
+                <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100;">
+                    <div style="background: white; padding: 3rem; border-radius: 1.5rem; text-align: center; max-width: 500px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+                        <div style="font-size: 5rem; line-height: 1; margin-bottom: 1rem;">${correct === total ? '🎉' : '📝'}</div>
+                        <h2 style="font-size: 2.5rem; color: #1f2937; margin-bottom: 1rem; font-weight: 800;">Kết Quả Bài Làm</h2>
+                        <p style="font-size: 1.5rem; color: #4b5563; margin-bottom: 2rem;">Bạn đã trả lời đúng <br><b style="font-size: 2.5rem; color: #2563eb;">${correct} / ${total}</b><br> câu hỏi!</p>
+                        <button onclick="this.closest('.feedback-icon').remove()" style="background: #2563eb; color: white; padding: 1rem 3rem; font-size: 1.5rem; border-radius: 9999px; font-weight: bold; cursor: pointer; border: none; transition: background 0.2s;">Đóng</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Drag and Drop Logic
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.target.style.opacity = '0.5';
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+            // Highlight drop zone
+            let target = ev.target;
+            if (!target.classList.contains('drop-zone') && !target.classList.contains('drag-source-area')) {
+                target = target.closest('.drop-zone') || target.closest('.drag-source-area');
+            }
+            if(target && target.classList.contains('drop-zone')){
+                target.classList.add('drag-over');
+            }
+        }
+
+        function dragLeave(ev) {
+            let target = ev.target;
+            if(target.classList.contains('drop-zone')){
+                target.classList.remove('drag-over');
+            }
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            
+            // Remove highlight
+            document.querySelectorAll('.drop-zone').forEach(zone => zone.classList.remove('drag-over'));
+
+            var data = ev.dataTransfer.getData("text");
+            var draggedElement = document.getElementById(data);
+            
+            if (draggedElement) {
+                draggedElement.style.opacity = '1';
+                
+                var targetZone = ev.target;
+                
+                // Allow dropping into the container if dropped on another element inside it
+                if (!targetZone.classList.contains('drop-zone') && !targetZone.classList.contains('drag-source-area')) {
+                    targetZone = targetZone.closest('.drop-zone') || targetZone.closest('.drag-source-area');
+                }
+
+                if (targetZone) {
+                    targetZone.appendChild(draggedElement);
+                }
+            }
+        }
+
+        document.addEventListener('dragend', function(ev) {
+            if (ev.target.classList.contains('draggable-element')) {
+                ev.target.style.opacity = '1';
+                document.querySelectorAll('.drop-zone').forEach(zone => zone.classList.remove('drag-over'));
+            }
+        });
+    </script>
+</body>
+</html>
